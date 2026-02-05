@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
+  # Niveau 1 :
   get "/level1/portfolios", to: "level1/portfolios#index"
+  # Niveau 2 :
+  patch "/level2/placements", to: "level2/placements#update"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
