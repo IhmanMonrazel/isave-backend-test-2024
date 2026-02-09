@@ -10,5 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 0) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_09_122208) do
+  create_table "placements", force: :cascade do |t|
+    t.integer "portfolio_id", null: false
+    t.string "kind"
+    t.string "isin"
+    t.string "label"
+    t.decimal "price"
+    t.decimal "share"
+    t.decimal "amount"
+    t.integer "srri"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["portfolio_id"], name: "index_placements_on_portfolio_id"
+  end
+
+  create_table "portfolios", force: :cascade do |t|
+    t.string "label"
+    t.string "kind"
+    t.decimal "amount"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_foreign_key "placements", "portfolios"
 end
