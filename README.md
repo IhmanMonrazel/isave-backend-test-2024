@@ -1,87 +1,124 @@
-# WeSave Backend Challenge - iSave
+Documentation test WeSave
 
-Version en Français [ici](README.fr.md).
+Niveau 1 
 
-## Requirements
+L’objectif du niveau 1 est de mettre en place un endpoint API permettant de retourner les portefeuilles et placements stockés en base de données (données seedées) au format JSON.
 
-- `ruby` version 3.3.1
-- `sqlite3`
 
-## Introduction
+Endpoint implémenté :
+- Requête HTTP : GET
+- Url : /level1/portfolios
 
-Welcome to the WeSave Tech Challenge!
+Cet endpoint interroge la base de données et retourne les portefeuilles et leurs placements associés au format JSON.
 
-Your task is to build **the backend API** of a web app, iSave, that helps clients manage their investments based on their financial goals. The core of this application is based on portfolio management and financial indicators.
+Exemple :
+{
+  "contracts": [
+    {
+      "label": "Portefeuille d'actions",
+      "type": "CTO",
+      "amount": 15000,
+      "lines": [
+        {
+          "type": "stock",
+          "isin": "FR0000120172",
+          "label": "Apple Inc.",
+          "price": 150,
+          "share": 0.2,
+          "amount": 15000,
+          "srri": 6
+        }
 
-## Submission Instructions
+Instructions pour lancer l’application :
+Dans le terminal : 
+- bundle install
+- rails db:create
+- rails db:migrate
+- rails db:seed
+- rails s
 
-- Clone this repository (do not fork it).
-- Implement the features described in [LEVELS.md](LEVELS.md).
-- Solve the levels in ascending order.
-- Write tests to cover the implemented functionality.
-- Ensure your code is well-documented. You are expected to provide instructions on how to run the application and use the API.
-- You can make as many commits as you’d like for each level. Every commit should follow the [Conventional Commit Standard](https://www.conventionalcommits.org/en/v1.0.0/), as follows:
+L’application est disponible avec : http://localhost:3000
 
-```txt
-<type>[optional scope]: <description>
+Tests :
+- Démarrage du serveur : - Commande rails s
+                            - Résultat attendu : démarrage sans erreur
+- Accès à l’endpoint : - Requête GET
+                        - Résultat attendu : code HTTP 200, aucune modification des données
 
-[optional body]
+Conclusion :
+Le niveau 1 est validé par la mise en place d’une requête GET qui retourne les données issues de la base de données, seedées au démarrage de l’application.
 
-[optional footer(s)]
-```
 
-Example:
+Niveau 2 
 
-```txt
-chore(init): this is the first commit
+L’objectif est d’exposer une API qui permet de modifier ses placements au sein d’un portefeuille, dépôt, retrait et transfert.
 
-Add the basic requirements to the application
+Endpoint implementé :
+- PATCH /level2/placements
 
-Level-1
-```
+Il reçoit une action à effectuer sur les placements stockés en base de données pour un portefeuille donné.
 
-## Evaluation Criteria
+Paramètres : 
+Champ	Type	Description
+action_type	string	Type d’opération
+portfolio_label	string	Nom du portefeuille ciblé
+isin		Identifiant du placement
+amount	number	Montant à ajouter/retirer/transférer
+from_isin		isin de la source
+to_isin		isin de la destination
 
-Your submission will be evaluated based on:
 
-- **Functionality**: How well does the backend meet the requirements?
-- **Code Quality**: Is the code well-organized, commented, and maintainable?
-- **Testing**: Are there adequate tests to ensure the functionality is correct and reliable?
+Instructions pour lancer l’application :
+Dans le terminal :
+- rails s
 
-## Setup Instructions
+L’application est disponible avec : http://localhost:3000
 
-1. Clone the repository (do not fork it): `git clone https://gitlab.com/anatec/wesave/isave-backend-test-2024.git`
-2. Install the required Ruby version (~>3.3.1)
-3. Install dependencies: `bundle install`
-4. Set up the database (if needed): `rake db:create db:migrate`
+Tests :
+(Verification après chaque test : curl "http://localhost:3000/level1/portfolios », lecture de l’état courant en base de données)
 
-## Submitting Your Work
+Test 1 - Dépôt (requête)
+On ajoute 10 unités monétaires au placement identifié par FR0000120172 :
 
-When you have completed your work, please submit your results to your contact person at WeSave. You can either:
-- Share a link to your project on Github, Gitlab, or Bitbucket to one of the following handles:
-  - Github: `@nezih-anatec`
-  - Gitlab: `@nezih1`
-- OR zip your project directory (make sure to include the `.git` folder) and send it via email.
+curl -X PATCH "http://localhost:3000/level2/placements" \
+  -H "Content-Type: application/json" \
+  -d @- <<'JSON'
+{
+  "action_type": "deposit",
+  "portfolio_label": "Portefeuille d'actions",
+  "isin": "FR0000120172",
+  "amount": 10
+}
+JSON
 
-## The Challenge
+Test 2 - Retrait (requête)
+On retire 10 unités monétaires du placement ciblé :
 
-In the [LEVELS.md](LEVELS.md) file, you will find 5 levels, each one progressively more difficult. Your task is to complete as many levels as possible within the time limit, showcasing your skills.
+curl -X PATCH "http://localhost:3000/level2/placements" \
+  -H "Content-Type: application/json" \
+  -d @- <<'JSON'
+{
+  "action_type": "withdraw",
+  "portfolio_label": "Portefeuille d'actions",
+  "isin": "FR0004567890",
+  "amount": 10
+}
+JSON
 
-## Time Estimates
+Test 3 - Transfert (requête)
+10 unités sont retirées du placement source, 10 unités sont ajoutées au placement destination :
 
-Each level is designed to take between half an hour to 2 hours, depending on the complexity.
+curl -X PATCH "http://localhost:3000/level2/placements" \
+  -H "Content-Type: application/json" \
+  -d @- <<'JSON'
+{
+  "action_type": "transfer",
+  "portfolio_label": "Portefeuille d'actions",
+  "from_isin": "FR0004567890",
+  "to_isin": "FR0000120172",
+  "amount": 10
+}
+JSON
 
-## Tips
-
-- You are free to look ahead at the higher levels, but try to focus on completing the current level with the simplest solution possible.
-- As the levels become more complex, you will likely need to reuse and adapt previous code. A good approach is to use Object-Oriented Programming (OOP), adding new layers of abstraction when necessary, and writing tests to ensure you don't break any existing functionality.
-- Feel free to write "shameless code" at first and refactor it in later levels.
-- For the higher levels, we are interested in clean, extensible, and robust code. Pay attention to edge cases and use exceptions when needed.
-
-**Additional notes:**
-- Authentication is **not** required for this application.
-- You are allowed to use any publicly available gems.
-- All amounts should be stored as decimal.
-- All asset prices will be defined in the same currency.
-
-**Good luck!**
+Conclusion : 
+L’API implémentée pour le niveau 2 permet de modifier des placements existants stockés en base de données et garantit la cohérence des montants après chaque opération.
